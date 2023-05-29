@@ -4,4 +4,8 @@
     <string name="hello_message">你好世界！</string>
     <string name="button_message">我是按钮</string>
     <string name="hinttext">在这里写</string>
+    <string name="spin_message">旋转信息</string>
+    <string name="Button1">按钮1</string>
+    <string name="Button2">按钮2</string>
+    <string name="Button3">按钮3</string>
 </resources>
