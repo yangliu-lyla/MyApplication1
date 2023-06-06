@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">Yang\'s Android Labs</string>
     <string name="hello_message">Hello world!</string>
-    <string name="button_message" translatable="false">I\'m a button</string>
+    <string name="button_message" translatable="false">LOGIN</string>
+    <string name="emailaddress" translatable="false">Enter your email address:</string>
+    <string name="emailhint" translatable="false">Type email here</string>
+    <string name="password" translatable="false">Type your password:</string>
+    <string name="textview">222222</string>
 </resources>
