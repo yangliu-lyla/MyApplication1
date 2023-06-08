@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Yang\'s Android Labs</string>
-    <string name="hello_message">Hello world!</string>
-    <string name="button_message" translatable="false">I\'m a button</string>
+    <string name="hello_message">Type your password</string>
+    <string name="button_message" translatable="false">Login in</string>
 </resources>
