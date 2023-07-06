@@ -2,6 +2,8 @@ package com.example.myapplication1;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,6 +13,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.example.myapplication1.databinding.ActivityChatRoomBinding;
 import com.example.myapplication1.databinding.ReceiveMessageBinding;
@@ -45,6 +48,25 @@ private  RecyclerView.Adapter myAdapter;
 
         MessageDatabase db = Room.databaseBuilder(getApplicationContext(), MessageDatabase.class, "database-name").build();
         ChatMessageDAO mDAO = db.cmDAO();
+        FrameLayout fragmentLocation = findViewById(R.id.fragmentLocation);
+        boolean IamTablet = fragmentLocation != null;
+
+        chatModel = new ViewModelProvider(this).get(ChatRoomViewModel.class);
+
+        chatModel.selectedMessage.observe(this, newMessageValue -> {
+
+            if (newMessageValue!=null) {
+                FragmentManager fMgr = getSupportFragmentManager();
+                FragmentTransaction tx = fMgr.beginTransaction();
+
+                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
+                tx.add(R.id.fragmentLocation, chatFragment);
+                tx.commit();
+
+            }
+
+        });
+
 
 
         if(messages == null)
@@ -63,7 +85,8 @@ private  RecyclerView.Adapter myAdapter;
         binding = ActivityChatRoomBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        chatModel = new ViewModelProvider(this).get(ChatRoomViewModel.class);
+
+
         messages=chatModel.messages.getValue();
 
         if(messages == null)
@@ -98,7 +121,12 @@ private  RecyclerView.Adapter myAdapter;
            itemView.setOnClickListener((clk->{
 
                int position = getAdapterPosition();
+               ChatMessage selected = messages.get(position);
 
+               chatModel.selectedMessage.postValue(selected);
+
+
+                /*
                AlertDialog.Builder builder = new AlertDialog.Builder( ChatRoom.this );
                 builder.setMessage(("Do you want to delete the message: "+ messageText.getText()))
                         .setTitle("Question: ")
@@ -119,7 +147,7 @@ private  RecyclerView.Adapter myAdapter;
                                     .show();
 
 
-                }).create().show();
+                }).create().show(); */
 
 
 
