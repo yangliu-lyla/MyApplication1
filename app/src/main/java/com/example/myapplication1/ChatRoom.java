@@ -2,6 +2,7 @@ package com.example.myapplication1;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
@@ -33,14 +34,14 @@ ActivityChatRoomBinding binding;
     ArrayList<ChatMessage> messages=new ArrayList<>();
 
     SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd-MMM-yyyy hh-mm-ss a");
-    String currentDateandTime = sdf.format(new Date());
+  //  String currentDateandTime = sdf.format(new Date());
 
     ChatMessage chatMessage;
 
 
 private  RecyclerView.Adapter myAdapter;
 
-
+    Executor thread = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,12 +57,27 @@ private  RecyclerView.Adapter myAdapter;
         chatModel.selectedMessage.observe(this, newMessageValue -> {
 
             if (newMessageValue!=null) {
+//                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
+//                FragmentManager fMgr = getSupportFragmentManager();
+//                FragmentTransaction tx = fMgr.beginTransaction();
+//
+//                 tx.add(R.id.fragmentLocation, chatFragment);
+//                tx.commit();
+
                 FragmentManager fMgr = getSupportFragmentManager();
                 FragmentTransaction tx = fMgr.beginTransaction();
 
+                // 移除之前添加的旧 Fragment
+                Fragment oldFragment = fMgr.findFragmentById(R.id.fragmentLocation);
+                if (oldFragment != null) {
+                    tx.remove(oldFragment);
+                }
+
+                // 创建并添加新的 Fragment
                 MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
                 tx.add(R.id.fragmentLocation, chatFragment);
                 tx.commit();
+
 
             }
 
@@ -97,18 +113,31 @@ private  RecyclerView.Adapter myAdapter;
 
         binding.sendButton.setOnClickListener(click ->{
            // messages.add(binding.textInput.getText().toString());
+            String currentDateandTime = sdf.format(new Date());
             chatMessage=new ChatMessage(binding.textInput.getText().toString(),currentDateandTime,true);
             messages.add(chatMessage);
             myAdapter.notifyItemInserted(messages.size()-1);
             binding.textInput.setText("");
+            thread.execute(() -> {
+               long id =  mDAO.insertMessage(chatMessage);
+               chatMessage.id=(int)id;
+            });
+
         });
 
         binding.button2.setOnClickListener(click ->{
             // messages.add(binding.textInput.getText().toString());
+            String currentDateandTime = sdf.format(new Date());
             chatMessage=new ChatMessage(binding.textInput.getText().toString(),currentDateandTime,false);
             messages.add(chatMessage);
             myAdapter.notifyItemInserted(messages.size()-1);
             binding.textInput.setText("");
+            thread.execute(() -> {
+                mDAO.insertMessage(chatMessage);
+                long id =  mDAO.insertMessage(chatMessage);
+                chatMessage.id=(int)id;
+            });
+
         });
 
         class MyRowHolder extends RecyclerView.ViewHolder {
