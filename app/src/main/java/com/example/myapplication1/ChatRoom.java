@@ -46,12 +46,12 @@ private  RecyclerView.Adapter myAdapter;
         MessageDatabase db = Room.databaseBuilder(getApplicationContext(), MessageDatabase.class, "database-name").build();
         ChatMessageDAO mDAO = db.cmDAO();
 
-
+        Executor thread = Executors.newSingleThreadExecutor();
         if(messages == null)
         {
             chatModel.messages.setValue(messages = new ArrayList<>());
 
-            Executor thread = Executors.newSingleThreadExecutor();
+
             thread.execute(() ->
             {
                 messages.addAll( mDAO.getAllMessages() ); //Once you get the data from database
@@ -78,6 +78,10 @@ private  RecyclerView.Adapter myAdapter;
             messages.add(chatMessage);
             myAdapter.notifyItemInserted(messages.size()-1);
             binding.textInput.setText("");
+            thread.execute(() -> {
+                mDAO.insertMessage(chatMessage);
+            });
+
         });
 
         binding.button2.setOnClickListener(click ->{
@@ -86,6 +90,10 @@ private  RecyclerView.Adapter myAdapter;
             messages.add(chatMessage);
             myAdapter.notifyItemInserted(messages.size()-1);
             binding.textInput.setText("");
+            thread.execute(() -> {
+                mDAO.insertMessage(chatMessage);
+            });
+
         });
 
         class MyRowHolder extends RecyclerView.ViewHolder {
@@ -95,31 +103,51 @@ private  RecyclerView.Adapter myAdapter;
             public MyRowHolder(@NonNull View itemView) {
             super(itemView);
 
+
            itemView.setOnClickListener((clk->{
 
                int position = getAdapterPosition();
+               ChatMessage removedMessage = messages.get(position);
 
                AlertDialog.Builder builder = new AlertDialog.Builder( ChatRoom.this );
                 builder.setMessage(("Do you want to delete the message: "+ messageText.getText()))
                         .setTitle("Question: ")
                         .setNegativeButton("No",(dialog,cl)->{})
                         .setPositiveButton("Yes",(dialog,cl)->{
-                            // ChatMessage m =messages.get(position);
-                          //    mDAO.deleteMessage(m);
-                            ChatMessage removedMessage = messages.remove(position);
 
-                            myAdapter.notifyItemRemoved(position);
+                            Executor thread1=Executors.newSingleThreadExecutor();
+
+                            thread1.execute(() -> {
+                                mDAO.deleteMessage(removedMessage);
+                                messages.remove(position);
+
+                                runOnUiThread(()->{
+                                    //on UI thread
+                                    myAdapter.notifyDataSetChanged();
+                                });
+
+
+                            });
+
+
 
                             Snackbar.make(messageText, "You deleted message #"+position,Snackbar.LENGTH_LONG)
                                     .setAction("Undo",clk1->{
                                         messages.add(position,removedMessage);
                                         myAdapter.notifyItemInserted(position);
 
+                                        // 向数据库重新插入消息
+                                        Executor undoThread = Executors.newSingleThreadExecutor();
+                                        undoThread.execute(() -> {
+                                            mDAO.insertMessage(removedMessage);
+                                        });
+
                                     })
                                     .show();
 
+                }
 
-                }).create().show();
+                ).create().show();
 
 
 
