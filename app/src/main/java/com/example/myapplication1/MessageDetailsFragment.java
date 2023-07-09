@@ -35,4 +35,19 @@ public class MessageDetailsFragment extends Fragment {
 
 
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // 隐藏 Fragment
+        getView().setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 显示 Fragment
+        getView().setVisibility(View.VISIBLE);
+    }
+
 }

@@ -73,9 +73,11 @@ private  RecyclerView.Adapter myAdapter;
                     tx.remove(oldFragment);
                 }
 
+
                 // 创建并添加新的 Fragment
                 MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
                 tx.add(R.id.fragmentLocation, chatFragment);
+                tx.addToBackStack("");
                 tx.commit();
 
 
@@ -153,7 +155,8 @@ private  RecyclerView.Adapter myAdapter;
                ChatMessage selected = messages.get(position);
 
                chatModel.selectedMessage.postValue(selected);
-
+               // 显示详情布局
+               binding.fragmentLocation.setVisibility(View.VISIBLE);
 
                 /*
                AlertDialog.Builder builder = new AlertDialog.Builder( ChatRoom.this );
