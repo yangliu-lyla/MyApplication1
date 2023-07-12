@@ -2,6 +2,7 @@ package com.example.myapplication1;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+//import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -12,10 +13,14 @@ import androidx.room.Room;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toolbar;
+
+
 import com.example.myapplication1.databinding.ActivityChatRoomBinding;
 import com.example.myapplication1.databinding.ReceiveMessageBinding;
 import com.example.myapplication1.databinding.SentMessageBinding;
@@ -33,6 +38,10 @@ ActivityChatRoomBinding binding;
     ChatRoomViewModel chatModel ;
     ArrayList<ChatMessage> messages=new ArrayList<>();
 
+    Toolbar theToolbar;
+
+
+
     SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd-MMM-yyyy hh-mm-ss a");
   //  String currentDateandTime = sdf.format(new Date());
 
@@ -43,9 +52,24 @@ private  RecyclerView.Adapter myAdapter;
 
     Executor thread = Executors.newSingleThreadExecutor();
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.menu,menu);
+
+        return true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        binding = ActivityChatRoomBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        //theToolbar =findViewById(R.id.toolbar);
+        setSupportActionBar(binding.toolbar);
 
         MessageDatabase db = Room.databaseBuilder(getApplicationContext(), MessageDatabase.class, "database-name").build();
         ChatMessageDAO mDAO = db.cmDAO();
@@ -53,6 +77,7 @@ private  RecyclerView.Adapter myAdapter;
         boolean IamTablet = fragmentLocation != null;
 
         chatModel = new ViewModelProvider(this).get(ChatRoomViewModel.class);
+
 
         chatModel.selectedMessage.observe(this, newMessageValue -> {
 
@@ -100,8 +125,10 @@ private  RecyclerView.Adapter myAdapter;
             });
         }
 
-        binding = ActivityChatRoomBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+
+
+        //theToolbar=findViewById(R.id.toolbar);
+
 
 
 
@@ -141,6 +168,7 @@ private  RecyclerView.Adapter myAdapter;
             });
 
         });
+
 
         class MyRowHolder extends RecyclerView.ViewHolder {
             TextView messageText;
@@ -237,6 +265,10 @@ private  RecyclerView.Adapter myAdapter;
         });
 
         binding.recycleView.setLayoutManager(new LinearLayoutManager(this));
+
+
+
+
 
 
     }

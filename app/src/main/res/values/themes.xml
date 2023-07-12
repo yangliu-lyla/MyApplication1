@@ -12,6 +12,10 @@
 
         <item name="android:textColor">@color/my_text</item>
 
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+
     </style>
 
 <!--    <style name="Theme.MyApplication1" parent="Base.Theme.MyApplication1" />-->
