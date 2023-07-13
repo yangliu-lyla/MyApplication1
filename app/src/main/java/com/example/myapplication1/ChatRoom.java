@@ -14,10 +14,12 @@ import androidx.room.Room;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
 
@@ -40,7 +42,7 @@ ActivityChatRoomBinding binding;
 
     Toolbar theToolbar;
 
-
+    private int selectedItemPosition = RecyclerView.NO_POSITION;
 
     SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd-MMM-yyyy hh-mm-ss a");
   //  String currentDateandTime = sdf.format(new Date());
@@ -52,6 +54,9 @@ private  RecyclerView.Adapter myAdapter;
 
     Executor thread = Executors.newSingleThreadExecutor();
 
+    TextView messageText1;
+
+    ChatMessageDAO mDAO1;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -59,6 +64,77 @@ private  RecyclerView.Adapter myAdapter;
         getMenuInflater().inflate(R.menu.menu,menu);
 
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // super.onOptionsItemSelected(item);
+
+        if (item.getItemId() == R.id.delete) {
+            // Perform delete operation here
+            deleteSelectedItem();
+
+        }
+
+        if(item.getItemId()==R.id.about){
+            CharSequence text = "This is lab9!";
+            int duration = Toast.LENGTH_SHORT;
+
+            Toast toast = Toast.makeText(this, text, duration);
+            toast.show();
+
+        }
+
+        return true;
+    }
+
+    private void deleteSelectedItem() {
+        if (selectedItemPosition != RecyclerView.NO_POSITION) {
+            //ChatMessage selectedMessage = messages.get(selectedItemPosition);
+           // messages.remove(selectedItemPosition);
+          //  myAdapter.notifyItemRemoved(selectedItemPosition);
+
+            ChatMessage removedMessage = messages.remove(selectedItemPosition);
+               AlertDialog.Builder builder = new AlertDialog.Builder( ChatRoom.this );
+                builder.setMessage(("Do you want to delete the message: "+ removedMessage.getMessage()))
+                        .setTitle("Question: ")
+                        .setNegativeButton("No",(dialog,cl)->{})
+                        .setPositiveButton("Yes",(dialog,cl)->{
+
+                            Executor thread2 = Executors.newSingleThreadExecutor();
+                            thread2.execute(() ->
+                            {
+                                mDAO1.deleteMessage(removedMessage);
+
+                                runOnUiThread( () ->
+                                        myAdapter.notifyDataSetChanged());
+                            });
+
+                        //    myAdapter.notifyItemRemoved(selectedItemPosition);
+
+                            Snackbar.make(messageText1, "You deleted message #"+selectedItemPosition,Snackbar.LENGTH_LONG)
+                                    .setAction("Undo",clk1->{
+
+                                       messages.add(selectedItemPosition,removedMessage);
+//                                         myAdapter.notifyDataSetChanged();
+
+                                        Executor thread3 = Executors.newSingleThreadExecutor();
+                                        thread3.execute(() -> {
+                                            mDAO1.insertMessage(removedMessage);
+                                            runOnUiThread(() -> myAdapter.notifyDataSetChanged());
+                                        });
+
+
+
+
+                                    })
+                                    .show();
+
+
+                }).create().show();
+
+
+        }
     }
 
     @Override
@@ -73,42 +149,43 @@ private  RecyclerView.Adapter myAdapter;
 
         MessageDatabase db = Room.databaseBuilder(getApplicationContext(), MessageDatabase.class, "database-name").build();
         ChatMessageDAO mDAO = db.cmDAO();
+        mDAO1=mDAO;
         FrameLayout fragmentLocation = findViewById(R.id.fragmentLocation);
         boolean IamTablet = fragmentLocation != null;
 
         chatModel = new ViewModelProvider(this).get(ChatRoomViewModel.class);
 
 
-        chatModel.selectedMessage.observe(this, newMessageValue -> {
-
-            if (newMessageValue!=null) {
-//                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
+//        chatModel.selectedMessage.observe(this, newMessageValue -> {
+//
+//            if (newMessageValue!=null) {
+////                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
+////                FragmentManager fMgr = getSupportFragmentManager();
+////                FragmentTransaction tx = fMgr.beginTransaction();
+////
+////                 tx.add(R.id.fragmentLocation, chatFragment);
+////                tx.commit();
+//
 //                FragmentManager fMgr = getSupportFragmentManager();
 //                FragmentTransaction tx = fMgr.beginTransaction();
 //
-//                 tx.add(R.id.fragmentLocation, chatFragment);
+//                // 移除之前添加的旧 Fragment
+//                Fragment oldFragment = fMgr.findFragmentById(R.id.fragmentLocation);
+//                if (oldFragment != null) {
+//                    tx.remove(oldFragment);
+//                }
+//
+//
+//                // 创建并添加新的 Fragment
+//                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
+//                tx.add(R.id.fragmentLocation, chatFragment);
+//                tx.addToBackStack("");
 //                tx.commit();
-
-                FragmentManager fMgr = getSupportFragmentManager();
-                FragmentTransaction tx = fMgr.beginTransaction();
-
-                // 移除之前添加的旧 Fragment
-                Fragment oldFragment = fMgr.findFragmentById(R.id.fragmentLocation);
-                if (oldFragment != null) {
-                    tx.remove(oldFragment);
-                }
-
-
-                // 创建并添加新的 Fragment
-                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
-                tx.add(R.id.fragmentLocation, chatFragment);
-                tx.addToBackStack("");
-                tx.commit();
-
-
-            }
-
-        });
+//
+//
+//            }
+//
+//        });
 
 
 
@@ -162,7 +239,7 @@ private  RecyclerView.Adapter myAdapter;
             myAdapter.notifyItemInserted(messages.size()-1);
             binding.textInput.setText("");
             thread.execute(() -> {
-                mDAO.insertMessage(chatMessage);
+               // mDAO.insertMessage(chatMessage);
                 long id =  mDAO.insertMessage(chatMessage);
                 chatMessage.id=(int)id;
             });
@@ -180,11 +257,16 @@ private  RecyclerView.Adapter myAdapter;
            itemView.setOnClickListener((clk->{
 
                int position = getAdapterPosition();
+
+               selectedItemPosition = position;
                ChatMessage selected = messages.get(position);
 
                chatModel.selectedMessage.postValue(selected);
+
+
                // 显示详情布局
-               binding.fragmentLocation.setVisibility(View.VISIBLE);
+            //   binding.fragmentLocation.setVisibility(View.VISIBLE);
+
 
                 /*
                AlertDialog.Builder builder = new AlertDialog.Builder( ChatRoom.this );
@@ -215,6 +297,7 @@ private  RecyclerView.Adapter myAdapter;
            }));
 
             messageText=itemView.findViewById(R.id.message);
+            messageText1=messageText;
             timeText=itemView.findViewById(R.id.time);
             }
         }
