@@ -101,6 +101,20 @@ private  RecyclerView.Adapter myAdapter;
                         .setNegativeButton("No",(dialog,cl)->{})
                         .setPositiveButton("Yes",(dialog,cl)->{
 
+
+                                FragmentManager fMgr = getSupportFragmentManager();
+                                FragmentTransaction tx = fMgr.beginTransaction();
+
+                                // 移除之前添加的旧 Fragment
+                                Fragment oldFragment = fMgr.findFragmentById(R.id.fragmentLocation);
+                                if (oldFragment != null) {
+                                    tx.remove(oldFragment);
+                                    tx.commit();
+                                }
+
+
+
+
                             Executor thread2 = Executors.newSingleThreadExecutor();
                             thread2.execute(() ->
                             {
@@ -156,36 +170,36 @@ private  RecyclerView.Adapter myAdapter;
         chatModel = new ViewModelProvider(this).get(ChatRoomViewModel.class);
 
 
-//        chatModel.selectedMessage.observe(this, newMessageValue -> {
-//
-//            if (newMessageValue!=null) {
-////                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
-////                FragmentManager fMgr = getSupportFragmentManager();
-////                FragmentTransaction tx = fMgr.beginTransaction();
-////
-////                 tx.add(R.id.fragmentLocation, chatFragment);
-////                tx.commit();
-//
+        chatModel.selectedMessage.observe(this, newMessageValue -> {
+
+            if (newMessageValue!=null) {
+//                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
 //                FragmentManager fMgr = getSupportFragmentManager();
 //                FragmentTransaction tx = fMgr.beginTransaction();
 //
-//                // 移除之前添加的旧 Fragment
-//                Fragment oldFragment = fMgr.findFragmentById(R.id.fragmentLocation);
-//                if (oldFragment != null) {
-//                    tx.remove(oldFragment);
-//                }
-//
-//
-//                // 创建并添加新的 Fragment
-//                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
-//                tx.add(R.id.fragmentLocation, chatFragment);
-//                tx.addToBackStack("");
+//                 tx.add(R.id.fragmentLocation, chatFragment);
 //                tx.commit();
-//
-//
-//            }
-//
-//        });
+
+                FragmentManager fMgr = getSupportFragmentManager();
+                FragmentTransaction tx = fMgr.beginTransaction();
+
+                // 移除之前添加的旧 Fragment
+                Fragment oldFragment = fMgr.findFragmentById(R.id.fragmentLocation);
+                if (oldFragment != null) {
+                    tx.remove(oldFragment);
+                }
+
+
+                // 创建并添加新的 Fragment
+                MessageDetailsFragment chatFragment = new MessageDetailsFragment(newMessageValue);
+                tx.add(R.id.fragmentLocation, chatFragment);
+                tx.addToBackStack("");
+                tx.commit();
+
+
+            }
+
+        });
 
 
 
@@ -264,8 +278,8 @@ private  RecyclerView.Adapter myAdapter;
                chatModel.selectedMessage.postValue(selected);
 
 
-               // 显示详情布局
-            //   binding.fragmentLocation.setVisibility(View.VISIBLE);
+              //  显示详情布局
+               binding.fragmentLocation.setVisibility(View.VISIBLE);
 
 
                 /*
